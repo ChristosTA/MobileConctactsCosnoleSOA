@@ -5,6 +5,7 @@ import gr.aueb.cf.mobilecontacts.dto.MobileContactInsertDTO;
 import gr.aueb.cf.mobilecontacts.dto.MobileContactUpdateDTO;
 import gr.aueb.cf.mobilecontacts.exceptions.ContactNotFoundException;
 import gr.aueb.cf.mobilecontacts.exceptions.PhoneNumberAlreadyExistException;
+import gr.aueb.cf.mobilecontacts.mapper.Mapper;
 import gr.aueb.cf.mobilecontacts.model.MobileContact;
 
 import java.util.List;
@@ -18,14 +19,15 @@ public class MobileContactServiceImpl implements IMobileContactService {
     }
 
     @Override
-    public MobileContact insertMobileContact(MobileContactInsertDTO dto) throws PhoneNumberAlreadyExistException {
+    public MobileContact insertMobileContact(MobileContactInsertDTO dto)
+            throws PhoneNumberAlreadyExistException {
         MobileContact mobileContact;
 
         try {
             if (dao.phoneNumberExists(dto.getPhoneNumber())){
                 throw new PhoneNumberAlreadyExistException("Contact with phone number" + dto.getPhoneNumber() + ".Already exists");
             }
-            mobileContact = mapInsertDTOToContact(dto);
+            mobileContact = Mapper.mapInsertDTOToContact(dto);
 
             System.err.printf("MobileContactServiceImpl Logger: %s was inserted\n",mobileContact);
             return dao.insert(mobileContact);
@@ -53,7 +55,7 @@ public class MobileContactServiceImpl implements IMobileContactService {
                 throw new PhoneNumberAlreadyExistException("Contact with phone number:" + dto.getPhoneNumber() +
                         "already exists and cannot be updated");
             }
-            newContact = mapUpdateDTOToContact(dto);
+            newContact = Mapper.mapUpdateDTOToContact(dto);
             System.err.printf("MobileContactServiceImpl Logger: %s was updated with new info: %s\n",mobileContact,newContact);
             return dao.update(dto.getId(), newContact);
         } catch (ContactNotFoundException | PhoneNumberAlreadyExistException e){
@@ -126,13 +128,5 @@ public class MobileContactServiceImpl implements IMobileContactService {
             throw e;
         }
 
-    }
-
-    private MobileContact mapInsertDTOToContact(MobileContactInsertDTO dto) {
-        return  new MobileContact(null,dto.getFirstname(), dto.getLastname(), dto.getPhoneNumber());
-    }
-
-    private MobileContact mapUpdateDTOToContact(MobileContactUpdateDTO dto) {
-        return  new MobileContact(dto.getId(), dto.getFirstname(), dto.getLastname(), dto.getPhoneNumber());
     }
 }
